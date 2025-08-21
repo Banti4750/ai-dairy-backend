@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import Users from '../../modals/userModal.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import mongoose from "mongoose";
+import verifyToken from '../../middleware/verifyToken.js';
 
 dotenv.config();
 const router = express.Router();
@@ -89,6 +91,20 @@ router.post('/login', async (req, res) => {
     }
 })
 
+
+//get user
+router.get('/profile', verifyToken, async (req, res) => {
+    const user_id = req.user.id;
+    console.log(req.user)
+    try {
+        const user = await Users.findById(new mongoose.Types.ObjectId(user_id)).select("name email profileImage gender _id ");
+
+        res.status(200).json({ user });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+})
 
 
 
