@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import connectDb from './config/connectDB.js';
 
 import userAuthRoutes from './routes/usersRoutes/authRoutes.js'
+import userdairyRoutes from './routes/usersRoutes/dairyRoutes.js'
 
 dotenv.config();
 const app = express();
@@ -13,6 +14,7 @@ connectDb();
 
 //all routes
 app.use('/api/user', userAuthRoutes)
+app.use('/api/dairy', userdairyRoutes)
 
 app.listen(PORT, () => {
     console.log(`✅ Server is listenting on port ${PORT}`)

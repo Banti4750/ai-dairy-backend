@@ -95,7 +95,6 @@ router.post('/login', async (req, res) => {
 //get user
 router.get('/profile', verifyToken, async (req, res) => {
     const user_id = req.user.id;
-    console.log(req.user)
     try {
         const user = await Users.findById(new mongoose.Types.ObjectId(user_id)).select("name email profileImage gender _id ");
 
