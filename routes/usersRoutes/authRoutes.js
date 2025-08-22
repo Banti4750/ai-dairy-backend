@@ -3,26 +3,28 @@ import bcrypt from 'bcrypt';
 import Users from '../../modals/userModal.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import mongoose from "mongoose";
+import crypto from 'crypto';
 import verifyToken from '../../middleware/verifyToken.js';
 
 dotenv.config();
 const router = express.Router();
 
-
-//register user
+// Register user with encryption support
 router.post('/register', async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, name, dob, gender } = req.body;
 
         if (!email || !password || !name) {
             return res.status(400).json({
-                message: "All fields required"
-            })
+                message: "Email, password, and name are required"
+            });
         }
 
-        if (password.length < 6 || password.length > 20) {
-            return res.status(400).json({ message: "Password must be at least 6 characters and less than 20" });
+        // Updated password requirements for better security
+        if (password.length < 8 || password.length > 128) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters and less than 128"
+            });
         }
 
         const existingUser = await Users.findOne({ email });
@@ -30,9 +32,24 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: "Email already registered" });
         }
 
+        // Generate salt for encryption key derivation
+        const encryptionSalt = crypto.randomBytes(32).toString('base64');
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await Users.create({ email, password: hashedPassword, name });
+        // Hash password for authentication (separate from encryption)
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const userData = {
+            email,
+            password: hashedPassword,
+            name,
+            encryptionSalt,
+        };
+
+        // Add optional fields
+        if (dob) userData.dob = new Date(dob);
+        if (gender) userData.gender = gender;
+
+        const newUser = await Users.create(userData);
 
         res.status(201).json({
             message: "User registered successfully",
@@ -40,6 +57,10 @@ router.post('/register', async (req, res) => {
                 id: newUser._id,
                 email: newUser.email,
                 name: newUser.name,
+                encryptionSalt: newUser.encryptionSalt, // Needed for client-side key derivation
+                dob: newUser.dob,
+                gender: newUser.gender,
+                profileImage: newUser.profileImage,
                 createdAt: newUser.createdAt,
             },
         });
@@ -48,63 +69,82 @@ router.post('/register', async (req, res) => {
         console.error("Register error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
-})
+});
 
-//login user
+// Login user with encryption salt
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+
         if (!email || !password) {
             return res.status(400).json({
-                message: "All fields required"
-            })
+                message: "Email and password are required"
+            });
         }
 
-        if (password.length < 6 || password.length > 20) {
-            return res.status(400).json({ message: "Password must be at least 6 characters and less than 20" });
-        }
-
-        const isUserExit = await Users.findOne({ email });
-        if (!isUserExit) {
+        const user = await Users.findOne({ email });
+        if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const isMatch = await bcrypt.compare(password, isUserExit.password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
         const token = jwt.sign(
-            { id: isUserExit._id },
+            { id: user._id, email: user.email },
             process.env.JWT_SECRET,
-            { expiresIn: "7d" } // token valid for 1 hour
+            { expiresIn: "7d" }
         );
 
         res.status(200).json({
             message: "User login successfully",
-            token
-        })
+            token,
+            user: {
+                id: user._id,
+                email: user.email,
+                name: user.name,
+                encryptionSalt: user.encryptionSalt, // Needed for key derivation
+                dob: user.dob,
+                gender: user.gender,
+                profileImage: user.profileImage,
+            }
+        });
 
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
-})
+});
 
-
-//get user
+// Get user profile
 router.get('/profile', verifyToken, async (req, res) => {
-    const user_id = req.user.id;
+    const userId = req.user.id;
     try {
-        const user = await Users.findById(new mongoose.Types.ObjectId(user_id)).select("name email profileImage gender _id ");
+        const user = await Users.findById(userId).select(
+            "name email profileImage gender dob encryptionSalt _id"
+        );
 
-        res.status(200).json({ user });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                profileImage: user.profileImage,
+                gender: user.gender,
+                dob: user.dob,
+                encryptionSalt: user.encryptionSalt, // Include for re-authentication scenarios
+            }
+        });
     } catch (error) {
-        console.error("Login error:", error);
+        console.error("Profile error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
-})
-
-
+});
 
 export default router;

@@ -7,20 +7,20 @@ const diaryEntrySchema = new Schema(
             ref: 'Users',
             required: true,
         },
-        title: {
-            type: String,
-            required: true,
-            trim: true,
-
+        // Encrypted fields - stored as encrypted objects
+        encryptedTitle: {
+            data: [Number], // Encrypted title as array of bytes
+            iv: [Number]    // Initialization vector
         },
-        content: {
-            type: String,
-            required: true
+        encryptedContent: {
+            data: [Number], // Encrypted content as array of bytes
+            iv: [Number]    // Initialization vector
         },
-        mood: {
-            type: String,
-            enum: ['very_happy', 'happy', 'neutral', 'sad', 'very_sad', 'angry', 'excited', 'anxious', 'grateful', 'stressed'],
+        encryptedMood: {
+            data: [Number], // Encrypted mood as array of bytes
+            iv: [Number]    // Initialization vector
         },
+        // Non-sensitive metadata (can remain unencrypted for queries)
         entryDate: {
             type: Date,
             default: Date.now,
@@ -33,7 +33,5 @@ const diaryEntrySchema = new Schema(
     }
 );
 
-
 const DiaryEntry = mongoose.model("DiaryEntry", diaryEntrySchema);
-
 export default DiaryEntry;

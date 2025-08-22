@@ -21,6 +21,11 @@ const userSchema = new Schema(
             required: true,
             trim: true,
         },
+        // Added for zero-knowledge encryption
+        encryptionSalt: {
+            type: String,
+            required: true, // Base64 encoded salt for key derivation
+        },
         dob: {
             type: Date,
         },
@@ -37,7 +42,5 @@ const userSchema = new Schema(
     { timestamps: true }
 );
 
-// Create model
 const Users = mongoose.model("Users", userSchema);
-
 export default Users;
