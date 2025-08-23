@@ -111,7 +111,7 @@ router.post('/login', async (req, res) => {
                 profileImage: user.profileImage,
             }
         });
-
+        console.log("hi")
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "Internal server error" });

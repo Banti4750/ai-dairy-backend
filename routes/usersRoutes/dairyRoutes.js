@@ -20,6 +20,9 @@ diaryRouter.post("/add", verifyToken, async (req, res) => {
 
         } = req.body;
 
+        // console.log(encryptedTitle)
+        // console.log(encryptedContent)
+
         // Validate required encrypted fields
         if (!encryptedTitle || !encryptedContent) {
             return res.status(400).json({
