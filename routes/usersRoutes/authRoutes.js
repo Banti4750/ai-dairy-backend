@@ -32,8 +32,6 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: "Email already registered" });
         }
 
-        // Generate salt for encryption key derivation
-        const encryptionSalt = crypto.randomBytes(32).toString('base64');
 
         // Hash password for authentication (separate from encryption)
         const hashedPassword = await bcrypt.hash(password, 12);
@@ -42,7 +40,6 @@ router.post('/register', async (req, res) => {
             email,
             password: hashedPassword,
             name,
-            encryptionSalt,
         };
 
         // Add optional fields
@@ -57,7 +54,6 @@ router.post('/register', async (req, res) => {
                 id: newUser._id,
                 email: newUser.email,
                 name: newUser.name,
-                encryptionSalt: newUser.encryptionSalt, // Needed for client-side key derivation
                 dob: newUser.dob,
                 gender: newUser.gender,
                 profileImage: newUser.profileImage,
@@ -105,7 +101,6 @@ router.post('/login', async (req, res) => {
                 id: user._id,
                 email: user.email,
                 name: user.name,
-                encryptionSalt: user.encryptionSalt, // Needed for key derivation
                 dob: user.dob,
                 gender: user.gender,
                 profileImage: user.profileImage,
@@ -123,7 +118,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     const userId = req.user.id;
     try {
         const user = await Users.findById(userId).select(
-            "name email profileImage gender dob encryptionSalt _id"
+            "name email profileImage gender dob  _id"
         );
 
         if (!user) {
@@ -138,7 +133,6 @@ router.get('/profile', verifyToken, async (req, res) => {
                 profileImage: user.profileImage,
                 gender: user.gender,
                 dob: user.dob,
-                encryptionSalt: user.encryptionSalt, // Include for re-authentication scenarios
             }
         });
     } catch (error) {

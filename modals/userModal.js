@@ -21,11 +21,6 @@ const userSchema = new Schema(
             required: true,
             trim: true,
         },
-        // Added for zero-knowledge encryption
-        encryptionSalt: {
-            type: String,
-            required: true, // Base64 encoded salt for key derivation
-        },
         dob: {
             type: Date,
         },
