@@ -14,14 +14,12 @@ diaryRouter.post("/add", verifyToken, async (req, res) => {
         const {
             encryptedTitle,
             encryptedContent,
-            encryptedMood,
+            moodId,
             entryDate,
 
 
         } = req.body;
 
-        // console.log(encryptedTitle)
-        // console.log(encryptedContent)
 
         // Validate required encrypted fields
         if (!encryptedTitle || !encryptedContent) {
@@ -31,19 +29,23 @@ diaryRouter.post("/add", verifyToken, async (req, res) => {
             });
         }
 
-        // Validate encryption object structure
-        // const validateEncryptedField = (field, fieldName) => {
-        //     if (!field.data || !field.iv || !Array.isArray(field.data) || !Array.isArray(field.iv)) {
-        //         throw new Error(`Invalid ${fieldName} encryption format`);
-        //     }
-        // };
-
-        // validateEncryptedField(encryptedTitle, "title");
-        // validateEncryptedField(encryptedContent, "content");
-
-        // if (encryptedMood) {
-        //     validateEncryptedField(encryptedMood, "mood");
-        // }
+        // check if moodId is valid ObjectId if provided
+        if (moodId && !mongoose.Types.ObjectId.isValid(moodId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid mood ID"
+            });
+        }
+        //check if moodId exists in Mood collection
+        if (moodId) {
+            const moodExists = await mongoose.model('Mood').exists({ _id: moodId });
+            if (!moodExists) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Mood not found"
+                });
+            }
+        }
 
         // Prepare diary entry data
         const diaryEntryData = {
@@ -54,7 +56,7 @@ diaryRouter.post("/add", verifyToken, async (req, res) => {
         };
 
         // Add optional encrypted fields
-        if (encryptedMood) diaryEntryData.encryptedMood = encryptedMood;
+        if (moodId) diaryEntryData.moodId = moodId;
 
         // Create new diary entry
         const newDiaryEntry = new DiaryEntry(diaryEntryData);
@@ -171,8 +173,7 @@ diaryRouter.put("/entries/:entryId", verifyToken, async (req, res) => {
         const {
             encryptedTitle,
             encryptedContent,
-            encryptedMood,
-            entryDate,
+
         } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(entryId)) {
@@ -195,8 +196,7 @@ diaryRouter.put("/entries/:entryId", verifyToken, async (req, res) => {
         const updateData = {};
         if (encryptedTitle) updateData.encryptedTitle = encryptedTitle;
         if (encryptedContent) updateData.encryptedContent = encryptedContent;
-        if (encryptedMood) updateData.encryptedMood = encryptedMood;
-        if (entryDate) updateData.entryDate = new Date(entryDate);
+
 
         const updatedEntry = await DiaryEntry.findByIdAndUpdate(
             entryId,

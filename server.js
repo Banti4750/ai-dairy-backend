@@ -5,6 +5,8 @@ import cors from 'cors';
 
 import userAuthRoutes from './routes/usersRoutes/authRoutes.js'
 import userdairyRoutes from './routes/usersRoutes/dairyRoutes.js'
+import adminmoodRoutes from './routes/adminRoutes/moodRoutes.js'
+import usermoodRoutes from './routes/usersRoutes/moodRoutes.js'
 
 dotenv.config();
 const app = express();
@@ -17,6 +19,8 @@ connectDb();
 //all routes
 app.use('/api/auth', userAuthRoutes)
 app.use('/api/diary', userdairyRoutes)
+app.use('/api/admin/mood', adminmoodRoutes)
+app.use('/api/mood', usermoodRoutes)
 
 app.listen(PORT, () => {
     console.log(`✅ Server is listenting on port ${PORT}`)

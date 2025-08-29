@@ -9,16 +9,17 @@ const diaryEntrySchema = new Schema(
         },
         // Encrypted fields - stored as encrypted objects
         encryptedTitle: {
-            data: [Number], // Encrypted title as array of bytes
-            iv: [Number]    // Initialization vector
+            type: String,
+            required: true,
         },
         encryptedContent: {
-            data: [Number], // Encrypted content as array of bytes
-            iv: [Number]    // Initialization vector
+            type: String,
+            required: true,
         },
-        encryptedMood: {
-            data: [Number], // Encrypted mood as array of bytes
-            iv: [Number]    // Initialization vector
+        moodId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Mood',
+            required: true,
         },
         // Non-sensitive metadata (can remain unencrypted for queries)
         entryDate: {
