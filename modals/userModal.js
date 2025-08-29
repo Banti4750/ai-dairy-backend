@@ -21,6 +21,10 @@ const userSchema = new Schema(
             required: true,
             trim: true,
         },
+        encryptionKeySalt: {
+            type: String,
+            required: true,
+        },
         dob: {
             type: Date,
         },

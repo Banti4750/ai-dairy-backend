@@ -11,7 +11,9 @@ const connectDb = async () => {
 
     try {
         await mongoose.connect(url, {
-            dbName: "ai-dairy",
+            // dbName: "ai-dairy",
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
         });
         console.log("✅ Connected to mongodb");
     } catch (error) {

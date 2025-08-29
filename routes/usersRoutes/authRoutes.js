@@ -14,6 +14,8 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
     try {
         const { email, password, name, dob, gender } = req.body;
+        const encryptionKeySalt = bcrypt.genSaltSync(10);
+        // console.log(encryptionKeySalt);
 
         if (!email || !password || !name) {
             return res.status(400).json({
@@ -41,6 +43,7 @@ router.post('/register', async (req, res) => {
             email,
             password: hashedPassword,
             name,
+            encryptionKeySalt
         };
 
         // Add optional fields
@@ -126,7 +129,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     const userId = req.user.id;
     try {
         const user = await Users.findById(userId).select(
-            "name email profileImage gender dob  _id"
+            "name email profileImage gender dob  _id encryptionKeySalt"
         );
 
         if (!user) {
@@ -141,6 +144,7 @@ router.get('/profile', verifyToken, async (req, res) => {
                 profileImage: user.profileImage,
                 gender: user.gender,
                 dob: user.dob,
+                encryptionKeySalt: user.encryptionKeySalt
             }
         });
     } catch (error) {
@@ -199,6 +203,7 @@ router.post('/forgot-password', async (req, res) => {
 
 router.post('/verify-otp-reset-password', async (req, res) => {
     const { email, otp, newPassword } = req.body;
+
 
     if (!email || !otp || !newPassword) {
         return res.status(400).json({ message: "All fields are required!" });
