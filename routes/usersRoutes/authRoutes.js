@@ -69,6 +69,7 @@ router.post('/register', async (req, res) => {
                 gender: newUser.gender,
                 profileImage: newUser.profileImage,
                 createdAt: newUser.createdAt,
+                encryptionKeySalt: newUser.encryptionKeySalt,
             },
         });
 
@@ -115,6 +116,7 @@ router.post('/login', async (req, res) => {
                 dob: user.dob,
                 gender: user.gender,
                 profileImage: user.profileImage,
+                encryptionKeySalt: user.encryptionKeySalt,
             }
         });
         console.log("hi")
