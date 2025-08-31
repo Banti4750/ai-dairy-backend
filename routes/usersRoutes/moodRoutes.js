@@ -1,5 +1,6 @@
 import express from 'express';
 import Mood from '../../modals/moodModal.js';
+import verifyToken from '../../middleware/verifyToken.js';
 
 
 const router = express.Router();
@@ -15,7 +16,7 @@ router.get('/all', async (req, res) => {
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', verifyToken, async (req, res) => {
 
     try {
         const moodId = req.params.id;
