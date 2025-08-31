@@ -20,7 +20,8 @@ router.get('/:id', verifyToken, async (req, res) => {
 
     try {
         const moodId = req.params.id;
-        const mood = await Mood.findById(moodId);
+        console.log(moodId)
+        const mood = await Mood.findById({ _id: moodId, });
 
         if (!mood) {
             return res.status(404).json({ message: "Mood not found" });

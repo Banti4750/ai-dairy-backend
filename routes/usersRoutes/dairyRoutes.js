@@ -97,7 +97,7 @@ diaryRouter.get("/entries", verifyToken, async (req, res) => {
             .sort(sort)
             .skip(skip)
             .limit(parseInt(limit))
-            .select('encryptedTitle encryptedContent encryptedMood  entryDate createdAt updatedAt');
+            .select('encryptedTitle encryptedContent encryptedMood moodId entryDate createdAt updatedAt');
 
         const total = await DiaryEntry.countDocuments({ userId });
 
