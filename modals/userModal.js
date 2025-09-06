@@ -28,10 +28,15 @@ const userSchema = new Schema(
         dob: {
             type: Date,
         },
+        number: {
+            type: String,
+            trim: true,
+            default: "not set",
+        },
         gender: {
             type: String,
-            enum: ["Male", "Female", "Other"],
-            default: "Other",
+            enum: ["Male", "Female", "Other", "Not Specified"],
+            default: "Not Specified",
         },
         profileImage: {
             type: String,
