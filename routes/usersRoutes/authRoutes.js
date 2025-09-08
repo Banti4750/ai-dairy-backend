@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 import verifyToken from '../../middleware/verifyToken.js';
 import Otps from '../../modals/otpModal.js';
 import sendOtpToEmail from '../../utils/sendEmail.js';
+import moment from "moment";
+
 
 dotenv.config();
 const router = express.Router();
@@ -111,12 +113,15 @@ router.post('/login', async (req, res) => {
             token,
             user: {
                 id: user._id,
-                email: user.email,
                 name: user.name,
-                dob: user.dob,
+                email: user.email,
+                phone: user.phone || null,
+                bio: user.bio || null,
+                joinDate: moment(user.createdAt).format("MMMM YYYY"), // e.g., "January 2024"
+                dob: user.dob ? moment(user.dob).format("MMMM DD, YYYY") : null,
                 gender: user.gender,
-                profileImage: user.profileImage,
-                encryptionKeySalt: user.encryptionKeySalt,
+                profileImage: user.profileImage || null,
+                encryptionKeySalt: user.encryptionKeySalt
             }
         });
         console.log("hi")
@@ -131,7 +136,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     const userId = req.user.id;
     try {
         const user = await Users.findById(userId).select(
-            "name email profileImage gender dob  _id encryptionKeySalt"
+            "name email phone bio profileImage gender dob createdAt encryptionKeySalt"
         );
 
         if (!user) {
@@ -140,12 +145,14 @@ router.get('/profile', verifyToken, async (req, res) => {
 
         res.status(200).json({
             user: {
-                id: user._id,
                 name: user.name,
                 email: user.email,
-                profileImage: user.profileImage,
+                phone: user.phone || null,
+                bio: user.bio || null,
+                joinDate: moment(user.createdAt).format("MMMM YYYY"), // e.g., "January 2024"
+                dob: user.dob ? moment(user.dob).format("MMMM DD, YYYY") : null,
                 gender: user.gender,
-                dob: user.dob,
+                profileImage: user.profileImage || null,
                 encryptionKeySalt: user.encryptionKeySalt
             }
         });
@@ -251,5 +258,46 @@ router.post('/verify-otp-reset-password', async (req, res) => {
 });
 
 
+//edit profile route
+router.put('/edit-profile', verifyToken, async (req, res) => {
+    const userId = req.user.id;
+    const { name, phone, bio, gender, dob, profileImage } = req.body;
+
+    try {
+        const updatedData = {};
+
+        if (name) updatedData.name = name;
+        if (phone) updatedData.phone = phone;
+        if (bio) updatedData.bio = bio;
+        if (gender) updated.gender = gender;
+        if (dob) updated.dob = new Date(dob);
+        if (profileImage) updated.profileImage = profileImage;
+        const updatedUser = await Users.findByIdAndUpdate(
+            userId,
+            { $set: updatedData },
+            { new: true, runValidators: true }
+        )
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({
+            message: "Profile updated successfully",
+            user: {
+                name: updatedUser.name,
+                email: updatedUser.email,
+                phone: updatedUser.phone || null,
+                bio: updatedUser.bio || null,
+                joinDate: moment(updatedUser.createdAt).format("MMMM YYYY"), // e.g., "January 2024"
+                dob: updatedUser.dob ? moment(updatedUser.dob).format("MMMM DD, YYYY") : null,
+                gender: updatedUser.gender || null,
+                profileImage: updatedUser.profileImage || null,
+            }
+        })
+    } catch (error) {
+        console.error("Edit Profile error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 
 export default router;
