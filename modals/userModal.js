@@ -33,6 +33,11 @@ const userSchema = new Schema(
             trim: true,
             default: "not set",
         },
+        bio: {
+            type: String,
+            trim: true,
+            default: "This user prefers to keep an air of mystery about them.",
+        },
         gender: {
             type: String,
             enum: ["Male", "Female", "Other", "Not Specified"],
