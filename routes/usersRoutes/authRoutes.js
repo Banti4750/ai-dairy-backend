@@ -269,9 +269,10 @@ router.put('/edit-profile', verifyToken, async (req, res) => {
         if (name) updatedData.name = name;
         if (phone) updatedData.phone = phone;
         if (bio) updatedData.bio = bio;
-        if (gender) updated.gender = gender;
-        if (dob) updated.dob = new Date(dob);
-        if (profileImage) updated.profileImage = profileImage;
+        if (gender) updatedData.gender = gender;
+        if (dob) updatedData.dob = new Date(dob);
+        if (profileImage) updatedData.profileImage = profileImage;
+
         const updatedUser = await Users.findByIdAndUpdate(
             userId,
             { $set: updatedData },

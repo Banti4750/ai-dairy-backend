@@ -28,7 +28,7 @@ const userSchema = new Schema(
         dob: {
             type: Date,
         },
-        number: {
+        phone: {
             type: String,
             trim: true,
             default: "not set",
