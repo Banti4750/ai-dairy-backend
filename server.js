@@ -7,6 +7,7 @@ import userAuthRoutes from './routes/usersRoutes/authRoutes.js'
 import userdairyRoutes from './routes/usersRoutes/dairyRoutes.js'
 import adminmoodRoutes from './routes/adminRoutes/moodRoutes.js'
 import usermoodRoutes from './routes/usersRoutes/moodRoutes.js'
+import userDetailsRoutes from './routes/usersRoutes/userDetailsRoutes.js'
 
 dotenv.config();
 const app = express();
@@ -21,6 +22,7 @@ app.use('/api/auth', userAuthRoutes)
 app.use('/api/diary', userdairyRoutes)
 app.use('/api/admin/mood', adminmoodRoutes)
 app.use('/api/mood', usermoodRoutes)
+app.use('/api/userdetails', userDetailsRoutes);
 
 app.listen(PORT, () => {
     console.log(`✅ Server is listenting on port ${PORT}`)
