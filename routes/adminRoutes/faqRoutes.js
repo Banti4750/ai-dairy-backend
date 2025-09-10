@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import Faq from '../../modals/faqModal.js';
 
 dotenv.config();
 const router = express.Router();

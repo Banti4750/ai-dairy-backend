@@ -1,9 +1,9 @@
 import express from 'express';
-import DailyQuotes from '../../modals/dailyQuotes';
+import DailyQuotes from '../../modals/dailyQuotes.js';
 
 const router = express.Router();
 
-router.get('/daily-quote', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         // pick one random quote
         const [dailyQuote] = await DailyQuotes.aggregate([{ $sample: { size: 1 } }]);

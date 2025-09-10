@@ -1,9 +1,9 @@
 import express from 'express';
-import DailyQuotes from '../../modals/dailyQuotes';
+import DailyQuotes from '../../modals/dailyQuotes.js';
 
 const router = express.Router();
 
-router.get('/daily-quote', async (req, res) => {
+router.get('/all', async (req, res) => {
     try {
         const dailyQuotes = await DailyQuotes.find({});
 
@@ -17,7 +17,7 @@ router.get('/daily-quote', async (req, res) => {
     }
 });
 
-router.post('/daily-quote/add', async (req, res) => {
+router.post('/add', async (req, res) => {
     const { quote, author } = req.body;
     if (!quote || !author) {
         return res.status(400).json({ message: "All fields required" });
@@ -33,7 +33,7 @@ router.post('/daily-quote/add', async (req, res) => {
     }
 });
 
-router.delete('/daily-quote/delete/:id', async (req, res) => {
+router.delete('/delete/:id', async (req, res) => {
     const quoteId = req.params.id;
     try {
         const deletedQuote = await DailyQuotes.findById
@@ -49,7 +49,7 @@ router.delete('/daily-quote/delete/:id', async (req, res) => {
 });
 
 
-router.put('/daily-quote/update/:id', async (req, res) => {
+router.put('/update/:id', async (req, res) => {
     const quoteId = req.params.id;
     const { quote, author } = req.body;
     if (!quote || !author) {
