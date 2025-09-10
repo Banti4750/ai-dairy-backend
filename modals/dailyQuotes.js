@@ -4,7 +4,7 @@ const { Schema, model } = mongoose;
 
 const dailyQuotesSchema = new Schema(
     {
-        text: {
+        quote: {
             type: String,
             required: true,
         },

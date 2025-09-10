@@ -14,6 +14,6 @@ const faqModalSchema = new Schema(
     },
     { timestamps: true }
 );
-const FaqModal = model("FaqModal", faqModalSchema);
+const Faq = model("Faq", faqModalSchema);
 
-export default FaqModal;
+export default Faq;
