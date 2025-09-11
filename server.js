@@ -12,6 +12,7 @@ import adminFaqRoutes from './routes/adminRoutes/faqRoutes.js';
 import adminDailyQuotesRoutes from './routes/adminRoutes/dailyQuotesRoutes.js';
 import userFaqRoutes from './routes/usersRoutes/faqRoutes.js';
 import userDailyQuotesRoutes from './routes/usersRoutes/dailyQuotesRoutes.js';
+import Users from './modals/userModal.js';
 
 dotenv.config();
 const app = express();
@@ -34,6 +35,20 @@ app.use('/api/dailyquotes', userDailyQuotesRoutes);
 app.use('/api/admin/mood', adminmoodRoutes)
 app.use('/api/admin/faq', adminFaqRoutes)
 app.use('/api/admin/dailyquotes', adminDailyQuotesRoutes)
+
+
+//api for testing
+app.get('/', (req, res) => {
+    res.send("AI Dairy backend is running...")
+})
+app.get('/db/test', async (req, res) => {
+    try {
+        const user = await Users.findOne({});
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+})
 
 app.listen(PORT, () => {
     console.log(`✅ Server is listenting on port ${PORT}`)
