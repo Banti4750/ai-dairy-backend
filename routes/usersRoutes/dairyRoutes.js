@@ -258,4 +258,34 @@ diaryRouter.delete("/entries/:entryId", verifyToken, async (req, res) => {
     }
 });
 
+
+//show the entry of dairy in calender by month and year
+diaryRouter.get("/calendar", verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { month, year } = req.query;
+        if (!month || !year) {
+            return res.status(400).json({
+                success: false,
+                message: "Month and year are required"
+            });
+        }
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+        const entries = await DiaryEntry.find({
+            userId,
+            entryDate: { $gte: startDate, $lte: endDate }
+        }).select('entryDate');
+        res.status(200).json({
+            message: "Diary entries for calendar retrieved successfully",
+            data: entries
+        });
+    } catch (error) {
+        console.error("Error retrieving diary entries for calendar:", error);
+        res.status(500).json({
+            message: "Internal server error occurred while retrieving diary entries for calendar"
+        });
+    }
+});
+
 export default diaryRouter;
