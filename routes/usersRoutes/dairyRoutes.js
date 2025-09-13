@@ -88,18 +88,95 @@ diaryRouter.post("/add", verifyToken, async (req, res) => {
 diaryRouter.get("/entries", verifyToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { page = 1, limit = 10, sortBy = 'entryDate', sortOrder = 'desc' } = req.query;
+        const {
+            page = 1,
+            limit = 10,
+            sortBy = 'entryDate',
+            sortOrder = 'desc',
+            timeframe = '30days',
+            start,
+            end
+        } = req.query;
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
 
-        const entries = await DiaryEntry.find({ userId })
+        // 🔹 Date filter logic
+        let dateFilter = {};
+
+        if (start && end) {
+            // ✅ Custom range mode
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            endDate.setHours(23, 59, 59, 999); // include whole day
+            dateFilter = { entryDate: { $gte: startDate, $lte: endDate } };
+
+        } else if (timeframe && timeframe !== "all") {
+            // ✅ Predefined timeframe mode
+            const now = new Date();
+            let startDate;
+
+            switch (timeframe) {
+                case "today":
+                    startDate = new Date();
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case "yesterday":
+                    startDate = new Date();
+                    startDate.setDate(startDate.getDate() - 1);
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case "thisWeek":
+                    startDate = new Date();
+                    const firstDayOfWeek = startDate.getDate() - startDate.getDay();
+                    startDate.setDate(firstDayOfWeek);
+                    startDate.setHours(0, 0, 0, 0);
+                    break;
+                case "thisMonth":
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case "lastMonth":
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    break;
+                case "7days":
+                    startDate = new Date(now.setDate(now.getDate() - 7));
+                    break;
+                case "15days":
+                    startDate = new Date(now.setDate(now.getDate() - 15));
+                    break;
+                case "30days":
+                    startDate = new Date(now.setDate(now.getDate() - 30));
+                    break;
+                case "90days":
+                    startDate = new Date(now.setDate(now.getDate() - 90));
+                    break;
+                case "6months":
+                    startDate = new Date(now.setMonth(now.getMonth() - 6));
+                    break;
+                case "1year":
+                    startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+                    break;
+                case "2years":
+                    startDate = new Date(now.setFullYear(now.getFullYear() - 2));
+                    break;
+                default:
+                    startDate = null;
+            }
+
+            if (startDate) {
+                dateFilter = { entryDate: { $gte: startDate } };
+            }
+        }
+
+        const filter = { userId, ...dateFilter };
+
+        const entries = await DiaryEntry.find(filter)
             .sort(sort)
             .skip(skip)
             .limit(parseInt(limit))
             .select('encryptedTitle encryptedContent encryptedMood moodId entryDate createdAt updatedAt');
 
-        const total = await DiaryEntry.countDocuments({ userId });
+        const total = await DiaryEntry.countDocuments(filter);
 
         res.status(200).json({
             success: true,
@@ -124,6 +201,7 @@ diaryRouter.get("/entries", verifyToken, async (req, res) => {
         });
     }
 });
+
 
 // Get single encrypted diary entry
 diaryRouter.get("/entries/:entryId", verifyToken, async (req, res) => {
