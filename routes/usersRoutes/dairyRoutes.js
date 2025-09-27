@@ -340,6 +340,7 @@ diaryRouter.delete("/entries/:entryId", verifyToken, async (req, res) => {
 //show the entry of dairy in calender by month and year
 diaryRouter.get("/calendar", verifyToken, async (req, res) => {
     try {
+
         const userId = req.user.id;
         const { month, year } = req.query;
         if (!month || !year) {
