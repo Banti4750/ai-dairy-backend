@@ -7,6 +7,7 @@ import verifyToken from '../../middleware/verifyToken.js';
 import Otps from '../../modals/otpModal.js';
 import sendOtpToEmail from '../../utils/sendEmail.js';
 import moment from "moment";
+import { createUserSchema, loginUserSchema } from '../../validations/userValidation.js';
 
 
 dotenv.config();
@@ -15,44 +16,39 @@ const router = express.Router();
 // Register user with encryption support
 router.post('/register', async (req, res) => {
     try {
-        const { email, password, name, dob, gender } = req.body;
-        const encryptionKeySalt = bcrypt.genSaltSync(10);
-        // console.log(encryptionKeySalt);
 
-        if (!email || !password || !name) {
+        const parsed = createUserSchema.safeParse(req.body);
+
+        if (!parsed.success) {
             return res.status(400).json({
-                message: "Email, password, and name are required"
+                message: "Validation failed",
+                errors: parsed.error.format(),
             });
         }
 
-        // Updated password requirements for better security
-        if (password.length < 8 || password.length > 128) {
-            return res.status(400).json({
-                message: "Password must be at least 8 characters and less than 128"
-            });
-        }
+        const data = parsed.data;
 
-        const existingUser = await Users.findOne({ email });
+        // 2️ Check if user already exists
+        const existingUser = await Users.findOne({ email: data.email });
         if (existingUser) {
             return res.status(400).json({ message: "Email already registered" });
         }
 
+        // 3️ Generate salt (for encryption key)
+        const encryptionKeySalt = bcrypt.genSaltSync(10);
 
-        // Hash password for authentication (separate from encryption)
-        const hashedPassword = await bcrypt.hash(password, 12);
+        // 4️ Hash password
+        const hashedPassword = await bcrypt.hash(data.password, 12);
 
+        // 5 Create user object
         const userData = {
-            email,
+            ...data,
             password: hashedPassword,
-            name,
-            encryptionKeySalt
+            encryptionKeySalt,
         };
 
-        // Add optional fields
-        if (dob) userData.dob = new Date(dob);
-        if (gender) userData.gender = gender;
-
         const newUser = await Users.create(userData);
+
 
         const token = jwt.sign(
             { id: newUser._id, email: newUser.email },
@@ -84,20 +80,30 @@ router.post('/register', async (req, res) => {
 // Login user with encryption salt
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        // const { email, password } = req.body;
 
-        if (!email || !password) {
+        // if (!email || !password) {
+        //     return res.status(400).json({
+        //         message: "Email and password are required"
+        //     });
+        // }
+        const parsed = loginUserSchema.safeParse(req.body);
+        if (!parsed.success) {
             return res.status(400).json({
-                message: "Email and password are required"
+                message: "Validation failed",
+                errors: parsed.error.format(),
             });
         }
 
-        const user = await Users.findOne({ email });
+        const data = parsed.data;
+        console.log(data)
+
+        const user = await Users.findOne({ email: data.email });
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(data.password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
