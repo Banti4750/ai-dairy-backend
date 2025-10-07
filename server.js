@@ -12,6 +12,7 @@ import adminFaqRoutes from './routes/adminRoutes/faqRoutes.js';
 import adminDailyQuotesRoutes from './routes/adminRoutes/dailyQuotesRoutes.js';
 import userFaqRoutes from './routes/usersRoutes/faqRoutes.js';
 import userDailyQuotesRoutes from './routes/usersRoutes/dailyQuotesRoutes.js';
+import adminAuthRoutes from './routes/adminRoutes/authRoutes.js';
 import Users from './modals/userModal.js';
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use('/api/dailyquotes', userDailyQuotesRoutes);
 app.use('/api/admin/mood', adminmoodRoutes)
 app.use('/api/admin/faq', adminFaqRoutes)
 app.use('/api/admin/dailyquotes', adminDailyQuotesRoutes)
+app.use('/api/admin/auth', adminAuthRoutes)
 
 
 //api for testing
